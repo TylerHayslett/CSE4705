@@ -16,67 +16,103 @@ public class Main
 {
     public static void main(String[] args) throws BiffException, IOException, WriteException
     {
-        double[][] testMatrix = new double[21][500]; 
-        double[][] trainMatrix = new double[21][2000];
-        double[][] testY = new double[1][500];
-        double[][] trainY = new double[1][2000];
+    	//load data from excel sheets
+        double[][] testMatrix = new double[500][21]; 
+        double[][] trainMatrix = new double[2000][21];
+        double[][] testY = new double[500][1];
+        double[][] trainY = new double[2000][1];
         Workbook workbook1 = Workbook.getWorkbook(new File("Sarcos_Data1_test.xls"));
         Workbook workbook2 = Workbook.getWorkbook(new File("Sarcos_Data1_train.xls"));
         Sheet sheet1 = workbook1.getSheet(0);
         Sheet sheet2 = workbook2.getSheet(0);
-        for(int j=1;j<2001;j++)
+        for(int i=1;i<2001;i++)
         {
-        	if(j<501)
+        	if(i<501)
             {
-        		Cell cell1 = sheet1.getCell(1, j);
+        		Cell cell1 = sheet1.getCell(1, i);
         		NumberCell n1 = (NumberCell) cell1;
-                testY[0][j-1]=n1.getValue();
+                testY[i-1][0]=n1.getValue();
             }
-        	Cell cell2 = sheet2.getCell(1, j);
+        	Cell cell2 = sheet2.getCell(1, i);
         	NumberCell n2 = (NumberCell) cell2;
-            trainY[0][j-1]=n2.getValue();
+            trainY[i-1][0]=n2.getValue();
         }
-        for(int i=2;i<23;i++)
+        for(int j=2;j<23;j++)
         {
-            for(int j=1;j<2001;j++)
+            for(int i=1;i<2001;i++)
             {
-                if(j<501)
+                if(i<501)
                 {
-                    Cell cell1 = sheet1.getCell(i, j);
+                    Cell cell1 = sheet1.getCell(j, i);
                     NumberCell n1 = (NumberCell) cell1;
-                    testMatrix[i-2][j-1]=n1.getValue();
+                    testMatrix[i-1][j-2]=n1.getValue();
                 }
-                Cell cell2 = sheet2.getCell(i, j);
+                Cell cell2 = sheet2.getCell(j, i);
                 NumberCell n2 = (NumberCell) cell2;
-                trainMatrix[i-2][j-1]=n2.getValue();
+                trainMatrix[i-1][j-2]=n2.getValue();
             }
         }
         workbook1.close();
         workbook2.close();
-        for(int i=0;i<21;i++)
+        
+        //print out last test matrix row
+        /*for(int i=0;i<21;i++)
         {
             System.out.println(testMatrix[i][499]);
-        }
-        
+        }*/
+        //print out test y vector
         /*for(int j=0; j < 500; j++)
         {
         	System.out.println(testY[0][j]);
         }*/
         
+        //convert 2D arrays to Jama matrices for calculations
+        // x, xT, y for training data
+        Matrix train = new Matrix(trainMatrix);
+        Matrix trainT = train.transpose();
+        Matrix trainYMat = new Matrix(trainY);
+        Matrix trainTX = trainT.times(train);
+        // x, xT, y for test data
         Matrix test = new Matrix(testMatrix);
         Matrix testT = test.transpose();
-        Matrix xTX = test.times(testT);
+        Matrix testYMat = new Matrix(testY);
+        Matrix xTX = testT.times(test);   //change name to testTX for consistency
+        
         Matrix invXTX = xTX.inverse();
+        //create 21 x 21 identity matrix without rounding errors
         Matrix ident = xTX.times(invXTX);
-        System.out.println(xTX.getRowDimension() + " ," + xTX.getColumnDimension());
-        System.out.println(ident.getRowDimension() + " ," + ident.getColumnDimension());
+        double[][] ident2 = new double[21][21];
         for(int i=0; i<21; i++)
         {
         	for(int j=0; j<21; j++)
         	{
-        		System.out.print(Math.round(ident.get(i, j)) + " ");
+        		
+        		ident2[i][j] = Math.round(ident.get(i, j));
+        	}
+        }
+        Matrix identity = new Matrix(ident2);
+       
+        //print identity matrix
+        /*for(int i=0; i<21; i++)
+        {
+        	for(int j=0; j<21; j++)
+        	{
+        		
+        		System.out.print(identity.get(i, j) + " ");
         	}
         	System.out.println();
+        }*/
+        
+        //Matrix w = xTX.plus(identity).inverse().times(testT).times(testYMat);  //use training , not test data
+        //add lambda in at some point
+        Matrix w = trainTX.plus(identity).inverse().times(trainT).times(trainYMat);
+        
+        //print dimensions and content of w
+        System.out.println(w.getRowDimension() + " ," + w.getColumnDimension());
+        for(int i=0; i<21; i++)
+        {
+        	System.out.println(w.get(i, 0));
         }
+        
     }
 }
