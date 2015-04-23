@@ -55,62 +55,10 @@ public class Main
         workbook1.close();
         workbook2.close();
         
-        //print out last test matrix row
-        /*for(int i=0;i<21;i++)
-        {
-            System.out.println(testMatrix[i][499]);
-        }*/
-        //print out test y vector
-        /*for(int j=0; j < 500; j++)
-        {
-        	System.out.println(testY[0][j]);
-        }*/
+        Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,0);
         
-        //convert 2D arrays to Jama matrices for calculations
-        // x, xT, y for training data
-        Matrix train = new Matrix(trainMatrix);
-        Matrix trainT = train.transpose();
-        Matrix trainYMat = new Matrix(trainY);
-        Matrix trainTX = trainT.times(train);
-        // x, xT, y for test data
-        Matrix test = new Matrix(testMatrix);
-        Matrix testT = test.transpose();
-        Matrix testYMat = new Matrix(testY);
-        Matrix xTX = testT.times(test);   //change name to testTX for consistency
-        
-        Matrix invXTX = xTX.inverse();
-        //create 21 x 21 identity matrix without rounding errors
-        Matrix ident = xTX.times(invXTX);
-        double[][] ident2 = new double[21][21];
-        for(int i=0; i<21; i++)
-        {
-        	for(int j=0; j<21; j++)
-        	{
-        		
-        		ident2[i][j] = Math.round(ident.get(i, j));
-        	}
-        }
-        Matrix identity = new Matrix(ident2);
-       
-        //print identity matrix
-        /*for(int i=0; i<21; i++)
-        {
-        	for(int j=0; j<21; j++)
-        	{
-        		
-        		System.out.print(identity.get(i, j) + " ");
-        	}
-        	System.out.println();
-        }*/
-        
-        //Matrix w = xTX.plus(identity).inverse().times(testT).times(testYMat);  //use training , not test data
-        //add lambda in at some point
-        Matrix w = trainTX.plus(identity).inverse().times(trainT).times(trainYMat);
-        
-        //print dimensions and content of w
         System.out.println(w.getRowDimension() + " ," + w.getColumnDimension());
-        for(int i=0; i<21; i++)
-        {
+        for(int i=0; i<21; i++){
         	System.out.println(w.get(i, 0));
         }
         

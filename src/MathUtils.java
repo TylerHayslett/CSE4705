@@ -2,11 +2,11 @@ import Jama.*;
 
 public class MathUtils {
 	
-	public static Matrix ridgeRegDbl(double[][] yVec, double[][] XMat, double lambda){
+	public static Matrix ridgeReg(double[][] yVec, double[][] XMat, double lambda){
 		Matrix y = new Matrix(yVec);
 		Matrix X = new Matrix(XMat);
-		//return ridReg(y,X,lambda);
-		return null;
+		
+		return ridgeReg(y,X,lambda);
 	}
 	
 	public static Matrix ridgeReg(Matrix y, Matrix X, double lambda){
@@ -25,6 +25,7 @@ public class MathUtils {
 	}
 	
 	public static Matrix tenFoldCV(Matrix y, Matrix X, int numTrials){
+		
 		Matrix[] foldsX = new Matrix[10];
 		Matrix[] foldsY = new Matrix[10];
 		
