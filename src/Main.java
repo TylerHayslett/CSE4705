@@ -57,7 +57,7 @@ public class Main
         
         //Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,0);
         double lambda = MathUtils.tenFoldCV(trainY,trainMatrix,1000);
-        
+        System.out.println("Chose: " + lambda);
         /*
         System.out.println(w.getRowDimension() + " ," + w.getColumnDimension());
         for(int i=0; i<21; i++){

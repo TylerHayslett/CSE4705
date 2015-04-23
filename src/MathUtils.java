@@ -51,7 +51,7 @@ public class MathUtils {
 			int rand1,rand2;
 			Matrix tempX,tempY;
 			
-			
+			/*
 			for(k = 0; k < (int)Math.floor(X.getRowDimension()/2); k++){
 				
 				rand1 = (int)(Math.random() * (X.getRowDimension()-1));
@@ -67,7 +67,7 @@ public class MathUtils {
 				X.setMatrix(rand2, rand2, 0, numCols-1, xRow1);
 				y.setMatrix(rand2, rand2, 0,0, yRow1);
 				
-			}
+			}*/
 			
 			for(k = 0; k < 9; k++){
 				//Construct X and y folds
@@ -78,21 +78,23 @@ public class MathUtils {
 			foldsX[9] = X.getMatrix((9 * foldNumRows), X.getRowDimension()-1, 0, numCols-1);
 			foldsY[9] = y.getMatrix((9 * foldNumRows), y.getRowDimension()-1, 0,0);
 			
-			double avgSoS = 0;
+			double avgErr = 0;
 			double lambdaHat = Math.pow(10, -2*Math.random()-3); //No, not Ayn
 			lambdas[i] = lambdaHat;
 			for(j = 0; j < 10; j++){
 				Matrix w;
 				w = ridgeReg(foldsY[j],foldsX[j],lambdaHat);
 				Matrix yFold = foldsX[j].times(w);
-				avgSoS += sumOfSquares(yFold,foldsY[j]);
+				avgErr += computeError(yFold,foldsY[j],foldsX[j],lambdaHat);
 			}
-			avgSoS = avgSoS/10d;
-			sumOfSquares[i] = avgSoS;
+			avgErr = avgErr/10d;
+			sumOfSquares[i] = avgErr;
 			
 		}
+		
 		double out = 0d;
 		double minSoS = Double.MAX_VALUE;
+		
 		for(j = 0;j < numTrials;j++){
 			System.out.println("Error of " + sumOfSquares[j] + " for lambda = " + lambdas[j]);
 			if(sumOfSquares[j] < minSoS){
@@ -114,5 +116,22 @@ public class MathUtils {
 			out += Math.pow((yhat.get(i,0)-y.get(i,0)),2);
 		}
 		return out;
+	}
+	/*
+	 * This method uses Wahba's method for determining the optimal lambda value using the RSS and squared number degrees of
+	 * free. This is super computationally intensive so that's fun.
+	 */
+	public static double computeError(Matrix yhat, Matrix y,Matrix X, double lambda){
+		double rss = sumOfSquares(yhat,y);
+		//A = (lambda^2)I
+		Matrix A = Matrix.identity(X.getColumnDimension(), X.getColumnDimension()).times(Math.pow(lambda,2));
+		//B = (Xt * X + (lambda^2)I)
+		Matrix B = (X.transpose().times(X)).plus(A);
+		//C = (X * (B^-1) * Xt) 
+		Matrix C = X.times(B.inverse()).times(X.transpose());
+		//Trace(C)^2
+		double degsOfFreedom = Math.pow(((Matrix.identity(C.getRowDimension(),C.getColumnDimension()).minus(C)).trace()),2);
+		return rss/degsOfFreedom;
+		
 	}
 }
