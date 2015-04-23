@@ -55,12 +55,15 @@ public class Main
         workbook1.close();
         workbook2.close();
         
-        Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,0);
+        //Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,0);
+        System.out.println(MathUtils.tenFoldCV(trainY,trainMatrix,1000));
         
+        /*
         System.out.println(w.getRowDimension() + " ," + w.getColumnDimension());
         for(int i=0; i<21; i++){
         	System.out.println(w.get(i, 0));
         }
+        */
         
     }
 }
