@@ -15,9 +15,9 @@ public class MathUtils {
 		//Compute product of transpose X and X
 		Matrix XTransX = XTrans.times(X);
 		//Build matrix with lambdas along diagonal and zeros everywhere else
-		Matrix lambdaI = Matrix.identity(XTransX.getRowDimension(), XTransX.getColumnDimension());
+		Matrix lambdaI = Matrix.identity(XTransX.getRowDimension(), XTransX.getColumnDimension()).times(lambda);
 		
-		//Construct vector of weights 
+		//Construct vector of weights
 		Matrix w = (((XTransX.plus(lambdaI)).inverse()).times(XTrans)).times(y);
 		
 		return w;
@@ -50,20 +50,25 @@ public class MathUtils {
 			//swaps which occur
 			int rand1,rand2;
 			Matrix tempX,tempY;
+			
+			
 			for(k = 0; k < (int)Math.floor(X.getRowDimension()/2); k++){
 				
 				rand1 = (int)(Math.random() * (X.getRowDimension()-1));
 				rand2 = (int)(Math.random() * (X.getRowDimension()-1));
 				//Save temporary rows in X and y
-				tempX = X.getMatrix(rand1, rand1, 0, numCols-1);
-				tempY = y.getMatrix(rand1, rand1, 0,0);
+				Matrix xRow1 = X.getMatrix(rand1, rand1, 0, numCols-1);
+				Matrix yRow1 = y.getMatrix(rand1, rand1, 0,0);
+				Matrix xRow2 = X.getMatrix(rand2, rand2, 0, numCols-1);
+				Matrix yRow2 = y.getMatrix(rand2, rand2, 0,0);
 				//Then swap
-				X.setMatrix(rand1,rand1,0,numCols-1,X.getMatrix(rand2, rand2, 0, numCols-1));
-				y.setMatrix(rand1,rand1,0,0,y.getMatrix(rand2, rand2, 0,0));
-				X.setMatrix(rand2, rand2, 0, numCols-1, tempX);
-				y.setMatrix(rand2, rand2, 0,0, tempY);
+				X.setMatrix(rand1,rand1,0,numCols-1,xRow2);
+				y.setMatrix(rand1,rand1,0,0,yRow2);
+				X.setMatrix(rand2, rand2, 0, numCols-1, xRow1);
+				y.setMatrix(rand2, rand2, 0,0, yRow1);
 				
 			}
+			
 			for(k = 0; k < 9; k++){
 				//Construct X and y folds
 				foldsX[k] = X.getMatrix((k*foldNumRows),((k+1)*foldNumRows)-1,0,numCols-1);
@@ -74,10 +79,10 @@ public class MathUtils {
 			foldsY[9] = y.getMatrix((9 * foldNumRows), y.getRowDimension()-1, 0,0);
 			
 			double avgSoS = 0;
+			double lambdaHat = Math.pow(10, -2*Math.random()-3); //No, not Ayn
+			lambdas[i] = lambdaHat;
 			for(j = 0; j < 10; j++){
 				Matrix w;
-				double lambdaHat = 100; //100*(Math.random()); //No, not Ayn
-				lambdas[i] = lambdaHat;
 				w = ridgeReg(foldsY[j],foldsX[j],lambdaHat);
 				Matrix yFold = foldsX[j].times(w);
 				avgSoS += sumOfSquares(yFold,foldsY[j]);
