@@ -56,14 +56,10 @@ public class Main
         workbook2.close();
         
         //Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,0);
-        double lambda = MathUtils.tenFoldCV(trainY,trainMatrix,1000);
-        
-        /*
-        System.out.println(w.getRowDimension() + " ," + w.getColumnDimension());
-        for(int i=0; i<21; i++){
-        	System.out.println(w.get(i, 0));
-        }
-        */
-        
+        boolean graphing = true;
+        double lambda = MathUtils.tenFoldCV(trainY,trainMatrix,1000,graphing);
+        System.out.println("Optimal lambda using ten-fold cross-validation: " + lambda);
+        Matrix w = MathUtils.ridgeReg(trainY,trainMatrix,lambda);
+        System.out.println("Computed R2 value for Ridge Regression: " + MathUtils.computeR2(new Matrix(testY),new Matrix(testMatrix),w,graphing));        
     }
 }
